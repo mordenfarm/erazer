@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERAZE — Background Removal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #f5f0e8;
+  --warm: #ede5d4;
+  --ink: #1a1410;
+  --mid: #8a7a68;
+  --faint: #d4c9b8;
+  --orange: #e85d26;
+  --orange-light: #f07040;
+  --radius: 2px;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  border-bottom: 1.5px solid var(--faint);
+}
+
+.logo { display: flex; align-items: baseline; gap: 12px; }
+
+.logo-text {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.logo-text span { color: var(--orange); }
+
+.logo-tag {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--mid);
+  padding: 3px 8px;
+  border: 1px solid var(--faint);
+  border-radius: 999px;
+}
+
+.header-note {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--mid);
+  letter-spacing: 0.08em;
+}
+
+.stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  padding: 40px 48px;
+  align-items: start;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 200px;
+  color: var(--faint);
+  font-size: 1.4rem;
+}
+
+.panel { display: flex; flex-direction: column; gap: 14px; }
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-label {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--mid);
+}
+
+#dropzone {
+  aspect-ratio: 4/3;
+  border: 2px dashed var(--faint);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+  background: var(--warm);
+}
+
+#dropzone:hover, #dropzone.over {
+  border-color: var(--orange);
+  background: #fdf5ee;
+}
+
+#dropzone input[type=file] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dz-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.dz-icon {
+  width: 52px;
+  height: 52px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.dz-title { font-weight: 700; font-size: 0.95rem; color: var(--ink); }
+
+.dz-sub {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--mid);
+  letter-spacing: 0.08em;
+}
+
+#input-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12px;
+  display: none;
+}
+
+#output-wrap {
+  aspect-ratio: 4/3;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background-color: white;
+  background-image:
+    linear-gradient(45deg, #ddd 25%, transparent 25%),
+    linear-gradient(-45deg, #ddd 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ddd 75%),
+    linear-gradient(-45deg, transparent 75%, #ddd 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  border: 1.5px solid var(--faint);
+}
+
+.output-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.output-empty-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--mid);
+}
+
+.empty-box {
+  width: 52px;
+  height: 52px;
+  border: 2px dashed var(--faint);
+  border-radius: 10px;
+}
+
+.empty-label {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+#output-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 12px;
+  display: none;
+}
+
+#progress-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(245, 240, 232, 0.93);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 5;
+}
+
+#progress-overlay.show { display: flex; }
+
+.prog-label {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.prog-bar-wrap {
+  width: 160px;
+  height: 3px;
+  background: var(--faint);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.prog-bar {
+  height: 100%;
+  background: var(--orange);
+  border-radius: 99px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.prog-pct {
+  font-family: 'Syne Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--orange);
+  color: white;
+  border-color: var(--orange);
+}
+
+.btn-primary:hover:not(:disabled) { background: var(--orange-light); border-color: var(--orange-light); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--mid);
+  border-color: var(--faint);
+}
+.btn-ghost:hover { border-color: var(--mid); color: var(--ink); }
+
+.btn-download {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+.btn-download:hover { background: #2d261e; }
+
+#status {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  color: var(--mid);
+  min-height: 1em;
+}
+#status.err { color: #c0392b; }
+#status.ok  { color: #2e7d32; }
+
+.model-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  color: var(--mid);
+}
+
+.model-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--faint);
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+.model-dot.loading { background: #f0a040; animation: pulse 1s infinite; }
+.model-dot.ready   { background: #4caf50; }
+.model-dot.error   { background: #c0392b; }
+
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+footer {
+  padding: 14px 48px;
+  border-top: 1px solid var(--faint);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-text {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--mid);
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 720px) {
+  .stage { grid-template-columns: 1fr; padding: 24px 20px; }
+  .divider { display: none; }
+  header { padding: 16px 20px; }
+  footer { padding: 12px 20px; flex-direction: column; gap: 4px; }
+  .header-note { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-text">ER<span>A</span>ZE</div>
+    <div class="logo-tag">Background Removal</div>
+  </div>
+  <div class="header-note">100% on-device · No server · No API key</div>
+</header>
+
+<div class="stage">
+  <!-- Input panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-label">01 / Input</div>
+    </div>
+
+    <div id="dropzone">
+      <input type="file" id="file-input" accept="image/*">
+      <div class="dz-body">
+        <div class="dz-icon">🖼️</div>
+        <div class="dz-title">Drop your image</div>
+        <div class="dz-sub">PNG · JPG · WEBP · Max 10MB</div>
+      </div>
+      <img id="input-img" alt="Input">
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="process-btn" disabled>✦ Remove Background</button>
+      <button class="btn btn-ghost" id="reset-btn">Clear</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <div class="divider">→</div>
+
+  <!-- Output panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-label">02 / Result</div>
+      <div class="model-badge">
+        <div class="model-dot loading" id="model-dot"></div>
+        <span id="model-status">Loading model…</span>
+      </div>
+    </div>
+
+    <div id="output-wrap">
+      <div class="output-empty" id="output-empty">
+        <div class="output-empty-inner">
+          <div class="empty-box"></div>
+          <div class="empty-label">Awaiting result</div>
+        </div>
+      </div>
+      <img id="output-img" alt="Result">
+      <div id="progress-overlay">
+        <div class="prog-label" id="prog-label">Processing…</div>
+        <div class="prog-bar-wrap">
+          <div class="prog-bar" id="prog-bar"></div>
+        </div>
+        <div class="prog-pct" id="prog-pct">0%</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <a id="download-btn" class="btn btn-download" style="display:none" download="eraze-result.png">
+        ↓ Download PNG
+      </a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-text">Powered by @imgly/background-removal v1.5.8 — ISNet neural network via WebAssembly</div>
+  <div class="footer-text">First run downloads ~40MB model · cached by your browser</div>
+</footer>
+
+<script type="module">
+import * as bgRemoval from 'https://esm.sh/@imgly/background-removal@1.5.8';
+// The library exports imglyRemoveBackground as default — grab it from the namespace
+const imglyRemoveBackground = bgRemoval.default ?? bgRemoval.imglyRemoveBackground ?? bgRemoval.removeBackground;
+
+// DOM
+const dropzone    = document.getElementById('dropzone');
+const fileInput   = document.getElementById('file-input');
+const inputImg    = document.getElementById('input-img');
+const processBtn  = document.getElementById('process-btn');
+const resetBtn    = document.getElementById('reset-btn');
+const outputEmpty = document.getElementById('output-empty');
+const outputImg   = document.getElementById('output-img');
+const downloadBtn = document.getElementById('download-btn');
+const statusEl    = document.getElementById('status');
+const modelDot    = document.getElementById('model-dot');
+const modelStatus = document.getElementById('model-status');
+const progressOverlay = document.getElementById('progress-overlay');
+const progLabel   = document.getElementById('prog-label');
+const progBar     = document.getElementById('prog-bar');
+const progPct     = document.getElementById('prog-pct');
+
+let currentFile = null;
+let resultUrl = null;
+
+// Verify we got the function
+if (typeof imglyRemoveBackground !== 'function') {
+  console.error('Available exports:', Object.keys(bgRemoval));
+  document.getElementById('status').textContent = 'Error: could not load background removal library';
+  document.getElementById('status').className = 'err';
+}
+
+// Config
+const makeConfig = () => ({
+  model: 'small',
+  output: { format: 'image/png', quality: 1 },
+  progress: (key, current, total) => {
+    const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+    const label = key.includes('fetch') ? 'Downloading model' :
+                  key.includes('init')  ? 'Initializing'      : 'Processing';
+    setProgress(label, pct);
+  }
+});
+
+// Mark model as ready once library loads (model fetches on first use)
+modelDot.className = 'model-dot ready';
+modelStatus.textContent = 'Ready';
+
+// File handling
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('over'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('over'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('over');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+function handleFile(file) {
+  if (!file.type.startsWith('image/')) return setStatus('Please upload an image file.', 'err');
+  if (file.size > 10 * 1024 * 1024) return setStatus('File too large. Max 10MB.', 'err');
+
+  if (resultUrl) { URL.revokeObjectURL(resultUrl); resultUrl = null; }
+  outputImg.style.display = 'none';
+  outputEmpty.style.display = 'flex';
+  downloadBtn.style.display = 'none';
+
+  currentFile = file;
+  const objUrl = URL.createObjectURL(file);
+  inputImg.src = objUrl;
+  inputImg.style.display = 'block';
+  dropzone.querySelector('.dz-body').style.visibility = 'hidden';
+  dropzone.querySelector('.dz-body').style.position = 'absolute';
+  processBtn.disabled = false;
+  setStatus(`Ready · ${file.name} · ${(file.size / 1024).toFixed(0)} KB`, '');
+}
+
+// Process
+processBtn.addEventListener('click', async () => {
+  if (!currentFile) return;
+  processBtn.disabled = true;
+  progressOverlay.classList.add('show');
+  setProgress('Starting…', 0);
+  setStatus('Processing…', '');
+
+  try {
+    const blob = await imglyRemoveBackground(currentFile, makeConfig());
+    resultUrl = URL.createObjectURL(blob);
+    outputImg.src = resultUrl;
+    outputImg.style.display = 'block';
+    outputEmpty.style.display = 'none';
+    downloadBtn.href = resultUrl;
+    downloadBtn.style.display = 'inline-flex';
+    setStatus(`✓ Done · ${(blob.size / 1024).toFixed(0)} KB transparent PNG`, 'ok');
+  } catch (err) {
+    setStatus('Error: ' + err.message, 'err');
+    console.error(err);
+  } finally {
+    progressOverlay.classList.remove('show');
+    processBtn.disabled = false;
+  }
+});
+
+// Reset
+resetBtn.addEventListener('click', () => {
+  currentFile = null;
+  fileInput.value = '';
+  inputImg.style.display = 'none';
+  inputImg.src = '';
+  dropzone.querySelector('.dz-body').style.visibility = '';
+  dropzone.querySelector('.dz-body').style.position = '';
+  outputImg.style.display = 'none';
+  outputEmpty.style.display = 'flex';
+  if (resultUrl) { URL.revokeObjectURL(resultUrl); resultUrl = null; }
+  downloadBtn.style.display = 'none';
+  processBtn.disabled = true;
+  setStatus('', '');
+});
+
+function setStatus(msg, type) {
+  statusEl.textContent = msg;
+  statusEl.className = type || '';
+}
+
+function setProgress(label, pct) {
+  progLabel.textContent = label;
+  progBar.style.width = pct + '%';
+  progPct.textContent = pct + '%';
+}
+</script>
+</body>
+</html>
