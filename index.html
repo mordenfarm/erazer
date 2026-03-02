@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ERAZE — Background Removal</title>
+<link rel="icon" type="image/png" href="https://i.ibb.co/TqFYzYGT/blackgiftlogo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Syne+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -98,11 +100,12 @@ header {
 }
 
 .panel-label {
-  font-family: 'Syne Mono', monospace;
-  font-size: 0.6rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--mid);
+  letter-spacing: 0.1em;
+  color: var(--ink);
 }
 
 #dropzone {
@@ -141,15 +144,16 @@ header {
 }
 
 .dz-icon {
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   background: white;
-  border-radius: 12px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  font-size: 1.8rem;
+  color: var(--orange);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
 }
 
 .dz-title { font-weight: 700; font-size: 0.95rem; color: var(--ink); }
@@ -250,27 +254,49 @@ header {
   color: var(--mid);
 }
 
-.prog-bar-wrap {
-  width: 160px;
-  height: 3px;
-  background: var(--faint);
-  border-radius: 99px;
+/* Uiverse loader by Shoh2008 */
+.loader {
+  width: 64px;
+  height: 64px;
+  position: relative;
+  background: #FFF;
+  border-radius: 4px;
   overflow: hidden;
 }
-
-.prog-bar {
-  height: 100%;
-  background: var(--orange);
-  border-radius: 99px;
-  width: 0%;
-  transition: width 0.3s ease;
+.loader:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40px;
+  height: 40px;
+  transform: rotate(45deg) translate(30%, 40%);
+  background: #ff9371;
+  box-shadow: 32px -34px 0 5px #ff3d00;
+  animation: slide 2s infinite ease-in-out alternate;
 }
-
-.prog-pct {
-  font-family: 'Syne Mono', monospace;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--ink);
+.loader:after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ff3d00;
+  transform: rotate(0deg);
+  transform-origin: 35px 145px;
+  animation: rotate 2s infinite ease-in-out;
+}
+@keyframes slide {
+  0%, 100% { bottom: -35px }
+  25%, 75%  { bottom: -2px  }
+  20%, 80%  { bottom: 2px   }
+}
+@keyframes rotate {
+  0%        { transform: rotate(-15deg) }
+  25%, 75%  { transform: rotate(0deg)  }
+  100%      { transform: rotate(25deg) }
 }
 
 .controls {
@@ -321,11 +347,15 @@ header {
 .btn-download:hover { background: #2d261e; }
 
 #status {
-  font-family: 'Syne Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.06em;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--mid);
   min-height: 1em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 #status.err { color: #c0392b; }
 #status.ok  { color: #2e7d32; }
@@ -369,12 +399,114 @@ footer {
   letter-spacing: 0.08em;
 }
 
+/* Download dropdown */
+.dl-wrap {
+  position: relative;
+}
+
+.dl-chevron {
+  font-size: 0.55rem;
+  margin-left: 2px;
+  transition: transform 0.2s;
+}
+.dl-wrap.open .dl-chevron { transform: rotate(180deg); }
+
+.dl-menu {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  background: white;
+  border: 1.5px solid var(--faint);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  min-width: 220px;
+  z-index: 100;
+}
+.dl-wrap.open .dl-menu { display: block; }
+
+.dl-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  border-bottom: 1px solid var(--faint);
+  transition: background 0.15s;
+}
+.dl-option:last-child { border-bottom: none; }
+.dl-option:hover { background: var(--warm); }
+
+.dl-label {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dl-sub {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--mid);
+  letter-spacing: 0.06em;
+}
+
+.dl-premium .dl-label { color: #b8860b; }
+.dl-premium .fa-crown { color: #d4a017; }
+.dl-premium { background: #fffdf0; }
+.dl-premium:hover { background: #fffae0; }
+
+.dl-free-tag {
+  display: inline-block;
+  background: #22c55e;
+  color: white;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+/* Footer brand */
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.footer-text strong {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.footer-text.muted { color: var(--faint); }
+
+/* Status icon alignment */
+#status i { margin-right: 4px; }
+
 @media (max-width: 720px) {
   .stage { grid-template-columns: 1fr; padding: 24px 20px; }
   .divider { display: none; }
   header { padding: 16px 20px; }
   footer { padding: 12px 20px; flex-direction: column; gap: 4px; }
-  .header-note { display: none; }
 }
 </style>
 </head>
@@ -385,20 +517,19 @@ footer {
     <div class="logo-text">ER<span>A</span>ZE</div>
     <div class="logo-tag">Background Removal</div>
   </div>
-  <div class="header-note">100% on-device · No server · No API key</div>
 </header>
 
 <div class="stage">
   <!-- Input panel -->
   <div class="panel">
     <div class="panel-header">
-      <div class="panel-label">01 / Input</div>
+      <div class="panel-label">Select Image from Device / Drag &amp; Drop</div>
     </div>
 
     <div id="dropzone">
       <input type="file" id="file-input" accept="image/*">
       <div class="dz-body">
-        <div class="dz-icon">🖼️</div>
+        <div class="dz-icon"><i class="fa-regular fa-image"></i></div>
         <div class="dz-title">Drop your image</div>
         <div class="dz-sub">PNG · JPG · WEBP · Max 10MB</div>
       </div>
@@ -418,7 +549,7 @@ footer {
   <!-- Output panel -->
   <div class="panel">
     <div class="panel-header">
-      <div class="panel-label">02 / Result</div>
+      <div class="panel-label">Removed Background</div>
       <div class="model-badge">
         <div class="model-dot loading" id="model-dot"></div>
         <span id="model-status">Loading model…</span>
@@ -434,25 +565,37 @@ footer {
       </div>
       <img id="output-img" alt="Result">
       <div id="progress-overlay">
+        <div class="loader"></div>
         <div class="prog-label" id="prog-label">Processing…</div>
-        <div class="prog-bar-wrap">
-          <div class="prog-bar" id="prog-bar"></div>
-        </div>
-        <div class="prog-pct" id="prog-pct">0%</div>
       </div>
     </div>
 
-    <div class="controls">
-      <a id="download-btn" class="btn btn-download" style="display:none" download="eraze-result.png">
-        ↓ Download PNG
-      </a>
+    <div class="controls" id="download-controls" style="display:none">
+      <div class="dl-wrap">
+        <button class="btn btn-download" id="dl-toggle">
+          <i class="fa-solid fa-download"></i> Download PNG <i class="fa-solid fa-chevron-down dl-chevron"></i>
+        </button>
+        <div class="dl-menu" id="dl-menu">
+          <a class="dl-option" id="dl-medium" download="eraze-result-medium.png">
+            <span class="dl-label">Medium Quality <span class="dl-free-tag">FREE</span></span>
+            <span class="dl-sub">Faster &middot; Smaller file</span>
+          </a>
+          <a class="dl-option dl-premium" id="dl-high" download="eraze-result-high.png">
+            <span class="dl-label"><i class="fa-solid fa-crown"></i> High Quality</span>
+            <span class="dl-sub">Best detail &middot; Larger file</span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <footer>
-  <div class="footer-text">Powered by @imgly/background-removal v1.5.8 — ISNet neural network via WebAssembly</div>
-  <div class="footer-text">First run downloads ~40MB model · cached by your browser</div>
+  <div class="footer-brand">
+    <img src="https://i.ibb.co/TqFYzYGT/blackgiftlogo.png" alt="Blackgift Tech Labs" class="footer-logo">
+    <span class="footer-text">Powered by <strong>BLACKGIFT TECH LABS</strong></span>
+  </div>
+  <div class="footer-text muted">First run downloads ~40MB model &middot; cached by your browser</div>
 </footer>
 
 <script type="module">
@@ -468,14 +611,12 @@ const processBtn  = document.getElementById('process-btn');
 const resetBtn    = document.getElementById('reset-btn');
 const outputEmpty = document.getElementById('output-empty');
 const outputImg   = document.getElementById('output-img');
-const downloadBtn = document.getElementById('download-btn');
+// download via dropdown
 const statusEl    = document.getElementById('status');
 const modelDot    = document.getElementById('model-dot');
 const modelStatus = document.getElementById('model-status');
 const progressOverlay = document.getElementById('progress-overlay');
 const progLabel   = document.getElementById('prog-label');
-const progBar     = document.getElementById('prog-bar');
-const progPct     = document.getElementById('prog-pct');
 
 let currentFile = null;
 let resultUrl = null;
@@ -487,19 +628,40 @@ if (typeof imglyRemoveBackground !== 'function') {
   document.getElementById('status').className = 'err';
 }
 
-// Config
-const makeConfig = () => ({
-  model: 'small',
+// Track cumulative progress across multiple fetch calls
+let totalBytes = 0, loadedBytes = 0;
+const fetchSizes = {};
+
+const makeConfig = (modelType = 'small') => ({
+  model: modelType,
   output: { format: 'image/png', quality: 1 },
   progress: (key, current, total) => {
-    const pct = total > 0 ? Math.round((current / total) * 100) : 0;
-    const label = key.includes('fetch') ? 'Downloading model' :
-                  key.includes('init')  ? 'Initializing'      : 'Processing';
-    setProgress(label, pct);
+    if (key.startsWith('fetch:')) {
+      // Track each file's total size
+      if (total > 0 && !fetchSizes[key]) {
+        fetchSizes[key] = total;
+        totalBytes = Object.values(fetchSizes).reduce((a, b) => a + b, 0);
+      }
+      // Update loaded for this key
+      const prev = fetchSizes[key + '_loaded'] || 0;
+      loadedBytes += (current - prev);
+      fetchSizes[key + '_loaded'] = current;
+      const pct = totalBytes > 0 ? Math.min(99, Math.round((loadedBytes / totalBytes) * 100)) : 0;
+      setProgress('Downloading model');
+    } else if (key.startsWith('compute:') || key === 'inference') {
+      const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+      setProgress('Removing background');
+    } else if (key.startsWith('decode:') || key.startsWith('encode:')) {
+      const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+      setProgress('Finalizing image');
+    } else {
+      const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+      setProgress('Processing');
+    }
   }
 });
 
-// Mark model as ready once library loads (model fetches on first use)
+// Mark model as ready once library loads
 modelDot.className = 'model-dot ready';
 modelStatus.textContent = 'Ready';
 
@@ -520,7 +682,7 @@ function handleFile(file) {
   if (resultUrl) { URL.revokeObjectURL(resultUrl); resultUrl = null; }
   outputImg.style.display = 'none';
   outputEmpty.style.display = 'flex';
-  downloadBtn.style.display = 'none';
+  document.getElementById('download-controls').style.display = 'none';
 
   currentFile = file;
   const objUrl = URL.createObjectURL(file);
@@ -537,18 +699,22 @@ processBtn.addEventListener('click', async () => {
   if (!currentFile) return;
   processBtn.disabled = true;
   progressOverlay.classList.add('show');
-  setProgress('Starting…', 0);
+  setProgress('Starting…');
   setStatus('Processing…', '');
 
+  totalBytes = 0; loadedBytes = 0; Object.keys(fetchSizes).forEach(k => delete fetchSizes[k]);
   try {
-    const blob = await imglyRemoveBackground(currentFile, makeConfig());
+    const blob = await imglyRemoveBackground(currentFile, makeConfig('small'));
     resultUrl = URL.createObjectURL(blob);
     outputImg.src = resultUrl;
     outputImg.style.display = 'block';
     outputEmpty.style.display = 'none';
-    downloadBtn.href = resultUrl;
-    downloadBtn.style.display = 'inline-flex';
-    setStatus(`✓ Done · ${(blob.size / 1024).toFixed(0)} KB transparent PNG`, 'ok');
+    document.getElementById('dl-medium').href = resultUrl;
+    document.getElementById('dl-high').href = resultUrl;
+    document.getElementById('download-controls').style.display = 'flex';
+    const sizeKB = (blob.size/1024).toFixed(0);
+    statusEl.innerHTML = `<i class="fa-solid fa-check-to-slot"></i> Done — ${sizeKB} KB transparent PNG ready`;
+    statusEl.className = 'ok';
   } catch (err) {
     setStatus('Error: ' + err.message, 'err');
     console.error(err);
@@ -569,20 +735,60 @@ resetBtn.addEventListener('click', () => {
   outputImg.style.display = 'none';
   outputEmpty.style.display = 'flex';
   if (resultUrl) { URL.revokeObjectURL(resultUrl); resultUrl = null; }
-  downloadBtn.style.display = 'none';
+  if (typeof highQualityUrl !== 'undefined' && highQualityUrl) { URL.revokeObjectURL(highQualityUrl); highQualityUrl = null; }
+  document.getElementById('download-controls').style.display = 'none';
   processBtn.disabled = true;
   setStatus('', '');
 });
 
+// High quality download — re-processes with medium model if needed
+let highQualityUrl = null;
+document.getElementById('dl-high')?.addEventListener('click', async (e) => {
+  if (highQualityUrl) return; // already generated
+  e.preventDefault();
+  dlWrap.classList.remove('open');
+  if (!currentFile) return;
+
+  processBtn.disabled = true;
+  progressOverlay.classList.add('show');
+  setProgress('High quality processing…');
+
+  try {
+    totalBytes = 0; loadedBytes = 0; Object.keys(fetchSizes).forEach(k => delete fetchSizes[k]);
+    const hqBlob = await imglyRemoveBackground(currentFile, {
+      ...makeConfig('medium')
+    });
+    highQualityUrl = URL.createObjectURL(hqBlob);
+    const dlHigh = document.getElementById('dl-high');
+    dlHigh.href = highQualityUrl;
+    // Trigger download
+    const a = document.createElement('a');
+    a.href = highQualityUrl;
+    a.download = 'eraze-result-high.png';
+    a.click();
+  } catch (err) {
+    setStatus('Error: ' + err.message, 'err');
+  } finally {
+    progressOverlay.classList.remove('show');
+    processBtn.disabled = false;
+  }
+});
+
+// Download dropdown toggle
+const dlToggle = document.getElementById('dl-toggle');
+const dlWrap = dlToggle?.closest('.dl-wrap');
+dlToggle?.addEventListener('click', () => dlWrap.classList.toggle('open'));
+document.addEventListener('click', e => {
+  if (dlWrap && !dlWrap.contains(e.target)) dlWrap.classList.remove('open');
+});
+
 function setStatus(msg, type) {
-  statusEl.textContent = msg;
+  statusEl.innerHTML = msg;
   statusEl.className = type || '';
 }
 
-function setProgress(label, pct) {
+function setProgress(label) {
   progLabel.textContent = label;
-  progBar.style.width = pct + '%';
-  progPct.textContent = pct + '%';
 }
 </script>
 </body>
